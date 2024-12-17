@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="no">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CountdownMagic</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: background-image 0.5s ease;
+        }
+
+        h1 {
+            color: white;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+            margin-bottom: 20px;
+        }
+
+        #countdown {
+            display: flex;
+            font-size: 2rem;
+            color: white;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+            margin-top: 20px;
+        }
+
+        .countdown-box {
+            background-color: rgba(0, 0, 0, 0.6);
+            margin: 0 10px;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 2.5rem;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        .countdown-box span {
+            display: block;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        select {
+            padding: 12px 20px;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #333;
+            transition: border-color 0.3s ease, background-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        select:focus {
+            border-color: #007BFF;
+            background-color: #e7f3fe;
+            outline: none;
+        }
+
+        option {
+            font-size: 1rem;
+            padding: 10px;
+        }
+
+        select::-ms-expand {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            #countdown {
+                font-size: 1.5rem;
+            }
+
+            select {
+                font-size: 1rem;
+                padding: 10px 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Nedtelling til høytid</h1>
+    <select id="holidaySelector">
+        <option value="jul">Jul</option>
+        <option value="paske">Påske</option>
+        <option value="id">Id</option>
+        <option value="ramadan">Ramadan</option>
+        <option value="sommerferie">Sommerferie</option>
+    </select>
+    <div id="countdown">
+        <div class="countdown-box" id="days-box">
+            00 <span>Dager</span>
+        </div>
+        <div class="countdown-box" id="hours-box">
+            00 <span>Timer</span>
+        </div>
+        <div class="countdown-box" id="minutes-box">
+            00 <span>Minutter</span>
+        </div>
+        <div class="countdown-box" id="seconds-box">
+            00 <span>Sekunder</span>
+        </div>
+    </div>
+
+    <script>
+        const holidayDates = {
+            jul: new Date(new Date().getFullYear(), 11, 25), // 25. desember
+            paske: new Date(new Date().getFullYear(), 2, 31), // F.eks. 31. mars
+            id: new Date(new Date().getFullYear(), 5, 10), // F.eks. 10. juni
+            ramadan: new Date(new Date().getFullYear(), 2, 10), // F.eks. 10. mars
+            sommerferie: new Date(new Date().getFullYear(), 5, 21) // 21. juni
+        };
+
+        const backgrounds = {
+            jul: 'url(https://files.oaiusercontent.com/file-LJdhmyDgrb6Hdpn4aDtPkx?se=2024-12-17T08%3A00%3A21Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D604800%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3D8f7f08c3-c685-43e9-a95e-e4e7f49b65ae.webp&sig=WIeLbLR9b5LemkZ9N24dBjl5hmiTE1GmXHBoUHXKqH8%3D)',
+            paske: 'url(https://files.oaiusercontent.com/file-AE8DjcTBUhqJZf3JPXx1FQ?se=2024-12-17T07%3A59%3A22Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D604800%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3D738a120e-dd0b-486a-b49d-2a1f930d5c37.webp&sig=S6%2Bm0UhHI2MRa/UIKMeHAYDMDJYXDkCcrtlnPCTOGpA%3D)',
+            id: 'url(https://s3-mittlag-prod.innocode.dev/production/uploads/image/image/794923/article_img_jpg.jpg)',
+            ramadan: 'url(https://fozias.co.uk/wp-content/uploads/2023/11/what-is-ramadan.jpg)',
+            sommerferie: 'url(https://svanenservice.no/wp-content/uploads/2022/07/fdS2zr.jpg)',
+        };
+
+        const countdownElement = document.getElementById('countdown');
+        const holidaySelector = document.getElementById('holidaySelector');
+
+        function getNextHolidayDate(date) {
+            const now = new Date();
+            if (date < now) {
+                date.setFullYear(now.getFullYear() + 1); // Sett til neste år hvis datoen er passert
+            }
+            return date;
+        }
+
+        function updateCountdown() {
+            const selectedHoliday = holidaySelector.value;
+            const targetDate = getNextHolidayDate(holidayDates[selectedHoliday]);
+            const now = new Date();
+            const timeDifference = targetDate - now;
+
+            const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+            document.getElementById('days-box').textContent = `${days < 10 ? '0' : ''}${days}`;
+            document.getElementById('hours-box').textContent = `${hours < 10 ? '0' : ''}${hours}`;
+            document.getElementById('minutes-box').textContent = `${minutes < 10 ? '0' : ''}${minutes}`;
+            document.getElementById('seconds-box').textContent = `${seconds < 10 ? '0' : ''}${seconds}`;
+        }
+
+        function updateBackground() {
+            const selectedHoliday = holidaySelector.value;
+            document.body.style.backgroundImage = backgrounds[selectedHoliday];
+        }
+
+        function initializeHoliday() {
+            updateBackground();
+            updateCountdown();
+        }
+
+        holidaySelector.addEventListener('change', initializeHoliday);
+
+        // Start med det valgte alternativet
+        initializeHoliday();
+        setInterval(updateCountdown, 1000);
+    </script>
+</body>
+
+</html>
